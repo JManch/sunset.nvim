@@ -10,6 +10,8 @@ local next_sunset = nil
 local timer = nil
 
 local default_opts = {
+	latitude = 51.5072, -- default to London
+	longitude = -0.1276,
 	sunrise_offset = 0, -- seconds
 	sunset_offset = 0, -- seconds
 	sunrise_override = nil,
@@ -17,8 +19,6 @@ local default_opts = {
 	day_callback = nil,
 	night_callback = nil,
 	update_interval = 60000, -- milliseconds
-	latitude = 51.5072, -- default to London
-	longitude = -0.1276,
 }
 
 local opts = {}
@@ -109,7 +109,7 @@ local load_opts = function(new_opts)
 	end
 
 	if new_opts.sunset_offset then
-		new_opts.sunset_offset = new_opts.sunset_offset % (86400 * util.sign(new_opts.sunrise_offset))
+		new_opts.sunset_offset = new_opts.sunset_offset % (86400 * util.sign(new_opts.sunset_offset))
 	end
 
 	opts = vim.tbl_extend("force", default_opts, new_opts)
@@ -119,23 +119,23 @@ local print_sun_times = function()
 	if next_sunrise == nil or next_sunset == nil then
 		notify.error("Cannot print sun times due to error.")
 	end
-	local message = ""
+
+	local sunrise_message = ""
 	if opts.sunrise_override then
-		message = string.format("Next sunrise is overriden to %s.", os.date("%c", next_sunrise))
-	elseif opts.sunrise_offset then
-		message = string.format("Next sunrise is offset to %s.", os.date("%c", next_sunrise))
-	else
-		message = string.format("Next sunrise is %s.", os.date("%c", next_sunrise))
+		sunrise_message = " overriden to"
+	elseif opts.sunrise_offset ~= 0 then
+		sunrise_message = " offset to"
 	end
 
+	local sunset_message = ""
 	if opts.sunset_override then
-		message = string.format("%s Next sunset is overriden to %s.", message, os.date("%c", next_sunset))
-	elseif opts.sunset_offset then
-		message = string.format("Next sunset is offset to %s.", os.date("%c", next_sunset))
-	else
-		message = string.format("%s Next sunset is %s.", message, os.date("%c", next_sunset))
+		sunset_message = " overriden to"
+	elseif opts.sunset_offset ~= 0 then
+		sunset_message = " offset to"
 	end
 
+	local message = "Next sunrise is%s: %s\nNext sunset is%s: %s"
+	message = message:format(sunrise_message, os.date("%c", next_sunrise), sunset_message, os.date("%c", next_sunset))
 	notify.info(message)
 end
 
