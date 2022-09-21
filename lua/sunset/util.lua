@@ -83,12 +83,12 @@ M.str_to_next_time = function(time_str)
     if not hour or not min then
         M.notify.error("Invalid time format provided. Supported format is HH:MM.")
         return nil
-    elseif tonumber(hour) > 24 or tonumber(min) > 59 then
+    elseif tonumber(hour) > 23 or tonumber(min) > 59 then
         M.notify.error("Invalid time provided. Must be a 24-hour time.")
         return nil
     end
 
-    local date = os.date("!*t")
+    local date = os.date("*t")
     local current_time = os.time(date)
     date.hour = tonumber(hour)
     date.min = tonumber(min)
