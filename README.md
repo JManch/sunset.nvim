@@ -1,1 +1,1 @@
-# auto-dark.nvim
+# sunset.nvim
