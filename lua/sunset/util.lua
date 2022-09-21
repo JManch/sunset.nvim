@@ -158,7 +158,7 @@ end
 ---@param message string
 ---@param level number
 local notify_func = function(message, level)
-	vim.notify(message, level, { title = "Sunset" })
+	vim.notify(message, level, { title = "sunset.nvim", timeout = 20000 })
 end
 
 M.notify = {
