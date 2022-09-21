@@ -23,6 +23,8 @@ require("sunset").setup({
 })
 ```
 
+I recommend ensuring that Sunset.nvim loads after any colorscheme plugins to reduce the likelihood of issues.
+
 ## Usage
 
 By default, the plugin changes the [background](https://neovim.io/doc/user/options.html#'background') option between light and dark. If you would like the change this behaviour (instead change the colorscheme for example), you can set the `day_callback` or `night_callback` which will disable the background switching.
