@@ -1,6 +1,6 @@
 # Sunset.nvim :sunrise:
 
-A theme switcher for Neovim that uses precise sunrise/sunset times for a given latitude and longitude.
+An automatic day/night theme switcher for Neovim that uses precise sunrise/sunset times based on your latitude and longitude.
 
 Sun times are calculated locally so the plugin does not require an internet connection to function. The plugin uses a libuv timer to ensure that the theme is updated whilst Neovim is open without the need for a restart.
 
