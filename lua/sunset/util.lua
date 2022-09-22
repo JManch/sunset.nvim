@@ -89,13 +89,12 @@ M.str_to_next_time = function(time_str)
     end
 
     local date = os.date("*t")
-    local current_time = os.time(date)
     date.hour = tonumber(hour)
     date.min = tonumber(min)
     date.sec = 0
 
     local next_time = os.time(date)
-    if next_time < current_time then
+    if next_time < os.time() then
         date.day = date.day + 1
         next_time = os.time(date)
     end
@@ -151,9 +150,19 @@ local julian_to_greg = function(julian_date)
     return date
 end
 
---- Returns a table containing the sunet and runrise time for the given
---- latitude, longitude and date. The returned times will be for day n if the
---- osdate provided is between 12 noon on day n-1 and 12 noon on day n.
+--- Converts a UTC osdate to the local epoch time
+---@param utc_date table
+---@return number
+local utc_to_epoch = function(utc_date)
+    local utc_epoch = os.time(os.date("!*t"))
+    local local_epoch = os.time()
+    local offset = local_epoch - utc_epoch
+    return os.time(utc_date) + offset
+end
+
+--- Returns a table containing the epoch sunset and sunrise time for the given
+--- latitude, longitude and UTC date. The returned times will be for day n if
+--- the osdate provided is between 12 noon on day n-1 and 12 noon on day n.
 ---
 --- Implements algorithm from wikipedia:
 --- https://en.wikipedia.org/wiki/Sunrise_equation#Complete_calculation_on_Earth
@@ -163,7 +172,11 @@ end
 ---@param date osdate
 ---@return table
 local calc_sun_times = function(latitude, longitude, date)
-    local j = date_to_julian(date)
+    -- convert date to epoch and back to ensure it's in a valid format
+    local utc_epoch = utc_to_epoch(date)
+    local j = date_to_julian(os.date("!*t", utc_epoch))
+
+    -- sunrise/sunset equation
     local mst = math.ceil(j - 2451545.0008) - (longitude / 360)
     local msa = (357.5291 + (0.98560028 * mst)) % 360
     local c = (1.9148 * sin(msa)) + (0.02 * sin(2 * msa)) + (0.0003 * sin(3 * msa))
@@ -180,37 +193,40 @@ local calc_sun_times = function(latitude, longitude, date)
     local h = acos((sin(-0.83) - (sin(latitude) * sin(sd))) / (cos(latitude) * cos(sd))) / 360
 
     return {
-        sunrise = os.time(julian_to_greg(st - h)),
-        sunset = os.time(julian_to_greg(st + h)),
+        sunrise = utc_to_epoch(julian_to_greg(st - h)),
+        sunset = utc_to_epoch(julian_to_greg(st + h)),
     }
 end
 
---- Returns a table containing the next sunrise and sunset times. Offsets are
---- in seconds and can be positive or negative.
+--- Returns a table containing the next sunrise and sunset epoch times. Offsets
+--- are in seconds and can be positive or negative.
 ---@param latitude number
 ---@param longitude number
 ---@param sunrise_offset number
 ---@param sunset_offset number
 ---@return table
 M.next_sun_times = function(latitude, longitude, sunrise_offset, sunset_offset)
-    local date = os.date("!*t")
-    local time = os.time(date)
-    date.hour = 0
+    local utc_date = os.date("!*t")
+    local time = os.time()
+    utc_date.day = utc_date.day - 1 -- Subtract 1 from day to cover edge cases for timezones a day behind UTC
+    utc_date.hour = 0
 
     -- first get sunset and sunrise for the current date
-    local sun_times = calc_sun_times(latitude, longitude, date)
+    local sun_times = calc_sun_times(latitude, longitude, utc_date)
     local sunrise = sun_times.sunrise + sunrise_offset
     local sunset = sun_times.sunset + sunset_offset
 
     local i = 0
+    -- increment day until we find the next sunrise/sunset time
     while sunrise < time or sunset < time do
         i = i + 1
+        -- if it takes more than a year for the sun to rise/set give an error
         if i > 365 then
             M.notify.error("Unsupported latitude, longitude coordinates.")
             return { sunrise = nil, sunset = nil }
         end
-        date.day = date.day + 1
-        sun_times = calc_sun_times(latitude, longitude, date)
+        utc_date.day = utc_date.day + 1
+        sun_times = calc_sun_times(latitude, longitude, utc_date)
         if sunrise < time then
             sunrise = sun_times.sunrise + sunrise_offset
         end
