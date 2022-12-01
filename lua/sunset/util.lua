@@ -134,7 +134,7 @@ local julian_to_greg = function(julian_date)
     local g = math.floor((e % 1461) / 4)
     local h = (5 * g) + 2
     date.day = math.floor((h % 153) / 5) + 1
-    date.month = ((math.floor(h / 152) + 2) % 12) + 1
+    date.month = ((math.floor(h / 153) + 2) % 12) + 1
     date.year = math.floor(e / 1461) - 4716 + math.floor((14 - date.month) / 12)
 
     -- time component
@@ -211,7 +211,7 @@ M.next_sun_times = function(latitude, longitude, sunrise_offset, sunset_offset)
     utc_date.day = utc_date.day - 1 -- Subtract 1 from day to cover edge cases for timezones a day behind UTC
     utc_date.hour = 0
 
-    -- first get sunset and sunrise for the current date
+    -- get sunset and sunrise for the current date
     local sun_times = calc_sun_times(latitude, longitude, utc_date)
     local sunrise = sun_times.sunrise + sunrise_offset
     local sunset = sun_times.sunset + sunset_offset
