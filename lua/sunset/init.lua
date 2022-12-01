@@ -173,13 +173,14 @@ M.setup = function(new_opts)
         end
         return
     end
-    vim.g.loaded_sunrise = 1
 
     load_opts(new_opts)
     update_sun_times()
     if next_sunrise == nil or next_sunset == nil then
         return
     end
+
+    vim.g.loaded_sunrise = 1
 
     -- create commands
     for command, func in pairs(commands) do
