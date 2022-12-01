@@ -3,7 +3,9 @@ local M = {}
 local util = require("sunset.util")
 local notify = util.notify
 
-local is_day = nil -- the actual day/night state
+M.is_day = nil -- the actual day/night state
+M.sunrise = nil -- formatted sunrise string
+M.sunset = nil -- formatted sunset string
 local is_day_forced = nil -- user's manually set day/night state
 local next_sunrise = nil
 local next_sunset = nil
@@ -20,6 +22,7 @@ local default_opts = {
     day_callback = nil, -- function that is called when day begins
     night_callback = nil, -- function that is called when night begins
     update_interval = 60000, -- how frequently to check for sunrise/sunset changes in milliseconds
+    time_format = "%H:%M", -- sun time formatting using os.date https://www.lua.org/pil/22.1.html
 }
 
 local trigger_night = function()
@@ -52,11 +55,14 @@ local update_sun_times = function()
     local sun_times = util.next_sun_times(opts.latitude, opts.longitude, opts.sunrise_offset, opts.sunset_offset)
     next_sunrise = util.str_to_next_time(opts.sunrise_override) or sun_times.sunrise
     next_sunset = util.str_to_next_time(opts.sunset_override) or sun_times.sunset
+
+    M.sunrise = os.date(opts.time_format, next_sunrise)
+    M.sunset = os.date(opts.time_format, next_sunset)
 end
 
 --- Checks if sunrise/sunset is outdated and triggers day/night transition if
 --- the sun's state has changed.
-local update_theme = function()
+local update = function()
     if next_sunrise == nil or next_sunset == nil then
         notify.error("Plugin stopping due to sunrise/sunset error.")
         if timer ~= nil then
@@ -72,11 +78,11 @@ local update_theme = function()
     end
 
     -- use the next sunset and sunrise times to determine if the sun is up
-    if is_day and next_sunrise < next_sunset then
-        is_day = false
+    if M.is_day and next_sunrise < next_sunset then
+        M.is_day = false
         trigger_night()
-    elseif not is_day and next_sunset < next_sunrise then
-        is_day = true
+    elseif not M.is_day and next_sunset < next_sunrise then
+        M.is_day = true
         trigger_day()
     end
 end
@@ -188,12 +194,12 @@ M.setup = function(new_opts)
     end
 
     -- set initial is_day value as opposite to trigger the first day/night switch
-    is_day = not (next_sunset < next_sunrise)
-    is_day_forced = is_day
+    M.is_day = not (next_sunset < next_sunrise)
+    is_day_forced = M.is_day
 
     -- start the update_theme timer
     timer = vim.loop.new_timer()
-    timer:start(0, opts.update_interval, vim.schedule_wrap(update_theme))
+    timer:start(0, opts.update_interval, vim.schedule_wrap(update))
 end
 
 return M
