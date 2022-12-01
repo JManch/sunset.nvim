@@ -157,6 +157,20 @@ local commands = {
 ---@param new_opts table
 M.setup = function(new_opts)
     if vim.g.loaded_sunrise == 1 then
+        -- update the background as neovim resets it if config is sourced
+        if is_day_forced then
+            if opts.day_callback then
+                opts.day_callback()
+            else
+                util.set_background("light")
+            end
+        else
+            if opts.night_callback then
+                opts.night_callback()
+            else
+                util.set_background("dark")
+            end
+        end
         return
     end
     vim.g.loaded_sunrise = 1
