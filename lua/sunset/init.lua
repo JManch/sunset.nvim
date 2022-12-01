@@ -154,8 +154,6 @@ local commands = {
             trigger_day()
         end
     end,
-    SunsetDay = trigger_day,
-    SunsetNight = trigger_night,
     SunsetTimes = print_sun_times,
 }
 
