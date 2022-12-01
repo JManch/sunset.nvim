@@ -3,9 +3,7 @@ local M = {}
 local util = require("sunset.util")
 local notify = util.notify
 
-M.is_day = nil -- the actual day/night state
-M.sunrise = nil -- formatted sunrise string
-M.sunset = nil -- formatted sunset string
+local is_day = nil -- the actual day/night state
 local is_day_forced = nil -- user's manually set day/night state
 local next_sunrise = nil
 local next_sunset = nil
@@ -56,8 +54,8 @@ local update_sun_times = function()
     next_sunrise = util.str_to_next_time(opts.sunrise_override) or sun_times.sunrise
     next_sunset = util.str_to_next_time(opts.sunset_override) or sun_times.sunset
 
-    M.sunrise = os.date(opts.time_format, next_sunrise)
-    M.sunset = os.date(opts.time_format, next_sunset)
+    vim.g.sunrise = os.date(opts.time_format, next_sunrise)
+    vim.g.sunset = os.date(opts.time_format, next_sunset)
 end
 
 --- Checks if sunrise/sunset is outdated and triggers day/night transition if
@@ -78,11 +76,13 @@ local update = function()
     end
 
     -- use the next sunset and sunrise times to determine if the sun is up
-    if M.is_day and next_sunrise < next_sunset then
-        M.is_day = false
+    if is_day and next_sunrise < next_sunset then
+        vim.g.is_day = false
+        is_day = false
         trigger_night()
-    elseif not M.is_day and next_sunset < next_sunrise then
-        M.is_day = true
+    elseif not is_day and next_sunset < next_sunrise then
+        vim.g.is_day = true
+        is_day = true
         trigger_day()
     end
 end
@@ -194,8 +194,8 @@ M.setup = function(new_opts)
     end
 
     -- set initial is_day value as opposite to trigger the first day/night switch
-    M.is_day = not (next_sunset < next_sunrise)
-    is_day_forced = M.is_day
+    is_day = not (next_sunset < next_sunrise)
+    is_day_forced = is_day
 
     -- start the update_theme timer
     timer = vim.loop.new_timer()
