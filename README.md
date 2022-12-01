@@ -52,6 +52,9 @@ vim.g.is_day -- boolean
 vim.g.sunrise -- next sunrise time string formatted using time_format option
 vim.g.sunset -- next sunset time string formatted using time_format option
 ```
+The plugin has the following commands:
+- `SunsetTimes` - view the next sunrise/sunset times
+- `SunsetToggle` - toggle between day and night theme
 
 ## Note on highlight groups
 
@@ -59,9 +62,3 @@ If you find that sunset.nvim is clearing your custom highlight groups every
 time you switch themes, you need to set highlight groups in a ColorScheme
 autocommand. More info
 [here](https://gist.github.com/romainl/379904f91fa40533175dfaec4c833f2f).
-
-The plugin has the following commands:
-- `SunsetTimes` - view the next sunrise/sunset times
-- `SunsetToggle` - switch between day and night theme
-- `SunsetDay` - switch to day theme
-- `SunsetNight` - switch to night theme
