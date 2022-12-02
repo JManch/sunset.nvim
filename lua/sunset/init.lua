@@ -47,12 +47,11 @@ local update_sun_times = function()
     if opts.sunrise_override and opts.sunset_override then
         next_sunrise = util.str_to_next_time(opts.sunrise_override)
         next_sunset = util.str_to_next_time(opts.sunset_override)
-        return
+    else
+        local sun_times = util.next_sun_times(opts.latitude, opts.longitude, opts.sunrise_offset, opts.sunset_offset)
+        next_sunrise = util.str_to_next_time(opts.sunrise_override) or sun_times.sunrise
+        next_sunset = util.str_to_next_time(opts.sunset_override) or sun_times.sunset
     end
-
-    local sun_times = util.next_sun_times(opts.latitude, opts.longitude, opts.sunrise_offset, opts.sunset_offset)
-    next_sunrise = util.str_to_next_time(opts.sunrise_override) or sun_times.sunrise
-    next_sunset = util.str_to_next_time(opts.sunset_override) or sun_times.sunset
 
     vim.g.sunrise = os.date(opts.time_format, next_sunrise)
     vim.g.sunset = os.date(opts.time_format, next_sunset)
@@ -185,6 +184,7 @@ M.setup = function(new_opts)
     end
 
     vim.g.loaded_sunrise = 1
+    vim.g.is_day = next_sunset < next_sunrise
 
     -- create commands
     for command, func in pairs(commands) do
