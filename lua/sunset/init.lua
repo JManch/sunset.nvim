@@ -159,7 +159,7 @@ local commands = {
 --- Loads the plugin
 ---@param new_opts table
 M.setup = function(new_opts)
-    if vim.g.loaded_sunrise == 1 then
+    if vim.g.loaded_sunset == 1 then
         -- update the background as neovim resets it if config is sourced
         if is_day_forced then
             if opts.day_callback then
@@ -183,7 +183,7 @@ M.setup = function(new_opts)
         return
     end
 
-    vim.g.loaded_sunrise = 1
+    vim.g.loaded_sunset = 1
     vim.g.is_day = next_sunset < next_sunrise
 
     -- create commands
