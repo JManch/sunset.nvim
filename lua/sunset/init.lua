@@ -191,13 +191,17 @@ M.setup = function(new_opts)
         vim.api.nvim_create_user_command(command, func, {})
     end
 
-    -- set initial is_day value as opposite to trigger the first day/night switch
-    is_day = not (next_sunset < next_sunrise)
-    is_day_forced = is_day
+    -- trigger initial day/night theme switch
+    is_day = next_sunset < next_sunrise
+    if is_day then
+        trigger_day()
+    else
+        trigger_night()
+    end
 
     -- start the update_theme timer
     timer = vim.loop.new_timer()
-    timer:start(0, opts.update_interval, vim.schedule_wrap(update))
+    timer:start(opts.update_interval, opts.update_interval, vim.schedule_wrap(update))
 end
 
 return M
