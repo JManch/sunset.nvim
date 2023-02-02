@@ -28,7 +28,29 @@ require("sunset").setup({
 ```
 
 I recommend ensuring that Sunset.nvim loads after any colorscheme plugins to
-reduce the likelihood of issues.
+reduce the likelihood of issues. 
+
+Here's how I load my colorscheme plugin and sunset.nvim with [lazy.nvim](https://github.com/folke/lazy.nvim):
+
+```lua
+{
+    "JManch/sunset.nvim",
+    dependencies = {
+        {
+            "colorscheme plugin",
+            config = function
+                -- Colorscheme plugin config
+            end,
+        },
+    },
+    lazy = false,
+    priority = 1000,
+    opts = {
+        latitude = 51.5072,
+        longitude = -0.1276,
+    },
+}
+```
 
 ## Usage
 
