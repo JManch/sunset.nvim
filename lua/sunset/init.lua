@@ -201,7 +201,7 @@ M.setup = function(new_opts)
 
     -- start the update_theme timer
     timer = assert(vim.loop.new_timer())
-    timer:start(0, opts.update_interval, vim.schedule_wrap(update))
+    timer:start(opts.update_interval, opts.update_interval, vim.schedule_wrap(update))
 
     vim.api.nvim_create_autocmd("VimLeavePre", {
         callback = function()
