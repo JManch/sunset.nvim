@@ -25,8 +25,6 @@ local default_opts = {
 }
 
 local trigger_night = function()
-    vim.g.is_day = false
-    is_day = false
     is_day_forced = false
     if opts.night_callback then
         opts.night_callback()
@@ -36,14 +34,31 @@ local trigger_night = function()
 end
 
 local trigger_day = function()
-    vim.g.is_day = true
-    is_day = true
     is_day_forced = true
     if opts.day_callback then
         opts.day_callback()
     else
         util.set_background("light")
     end
+end
+
+local switch = function(init)
+  if opts.custom_switch ~= nil then
+    opts.custom_switch({
+        init = init,
+        is_day = is_day,
+        next_sunrise = next_sunrise,
+        next_sunset = next_sunset,
+        trigger_day = trigger_day,
+        trigger_night = trigger_night,
+    })
+  else
+    if is_day then
+      trigger_day()
+    else
+      trigger_night()
+    end
+  end
 end
 
 --- Updates the next_sunrise and next_sunset values
@@ -79,23 +94,15 @@ local update = function()
         update_sun_times()
     end
 
-    if opts.custom_switch ~= nil then
-        opts.custom_switch({
-            init = false,
-            is_day = is_day,
-            next_sunrise = next_sunrise,
-            next_sunset = next_sunset,
-            trigger_day = trigger_day,
-            trigger_night = trigger_night,
-        })
-        return
-    end
-
     -- use the next sunset and sunrise times to determine if the sun is up
     if is_day and next_sunrise < next_sunset then
-        trigger_night()
+        vim.g.is_day = false
+        is_day = false
+        switch(false)
     elseif not is_day and next_sunset < next_sunrise then
-        trigger_day()
+        vim.g.is_day = true
+        is_day = true
+        switch(false)
     end
 end
 
@@ -200,6 +207,7 @@ M.setup = function(new_opts)
 
     vim.g.loaded_sunset = 1
     vim.g.is_day = next_sunset < next_sunrise
+    is_day = next_sunset < next_sunrise
 
     -- create commands
     for command, func in pairs(commands) do
@@ -207,23 +215,7 @@ M.setup = function(new_opts)
     end
 
     -- trigger initial day/night theme switch
-    if opts.custom_switch ~= nil then
-        opts.custom_switch({
-            init = true,
-            is_day = is_day,
-            next_sunrise = next_sunrise,
-            next_sunset = next_sunset,
-            trigger_day = trigger_day,
-            trigger_night = trigger_night,
-        })
-    else
-        is_day = next_sunset < next_sunrise
-        if is_day then
-            trigger_day()
-        else
-            trigger_night()
-        end
-    end
+    switch(true)
 
     -- start the update_theme timer
     timer = assert(vim.loop.new_timer())
